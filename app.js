@@ -129,6 +129,12 @@ function playGame(){
         update(){
             this.draw();
         }
+        calcDistanceWith(object){
+            const a = Math.pow(this.x - object.x, 2);
+            const b = Math.pow(this.y - object.y, 2);
+
+            return Math.sqrt(a + b);
+        }
     }
 
     class Sun extends Sprite{
@@ -216,6 +222,55 @@ function playGame(){
         }
     }
 
+    class IcePeaShooter extends Sprite{
+        constructor(width, height, x, y){
+            super(width, height, x, y);
+            this.image = new Image();
+            this.image.src = IcePeaImage.replace("*", "00");
+            this.frameCurrent = 0;
+            this.frameMax = 31;
+            this.frameElapsed = 0;
+        }
+        draw(){
+            ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
+        }
+        update(){
+            if(this.frameCurrent === this.frameMax){
+                this.frameCurrent = 0;
+            }
+
+            this.image.src = PeaShooterImage.replace("*", this.frameCurrent < 10 ? "0"+this.frameCurrent : this.frameCurrent);
+
+            this.draw();
+
+            this.frameElapsed++;
+
+            if(this.frameElapsed === 12){
+                this.frameCurrent++;
+                this.frameElapsed = 0;
+            }
+        }
+    }
+
+    class Wallnut extends Sprite{
+        constructor(width, height, x, y){
+            super(width, height, x, y);
+            this.image = new Image();
+            this.image.src = WallNutImage.replace("*", "00");
+            this.frameCurrent = 0;
+            this.frameMax = 32;
+        }
+        update(){
+            if(this.frameCurrent > this.frameMax){
+                this.frameCurrent = 0;
+            }
+
+            this.image.src = WallNutImage.replace("*", this.frameCurrent.toString().padStart(2, "0"));
+
+            this.draw();
+        }
+    }
+
     class Zombie extends Sprite{
         constructor(width, height, x, y, imageSrc){
             super(width, height, x, y);
@@ -258,7 +313,7 @@ function playGame(){
                 this.frameElapsed = 0;
             }
 
-            if(this.collideWithLawnMower && this.rotation < 90){
+            if(this.collideWithLawnMower && this.rotation <= 90){
                 this.rotation += this.rotateVelocity;
                 console.log(this.rotation);
             }
@@ -291,6 +346,7 @@ function playGame(){
     const grounds = [];
     let zombies = [];
     let draggedItems = null;
+    let draggedItemsName = null;
     let plants = [new PeaShooter(90, 90, 120, 120)];
     const lawnMowers = [];
     const seeds = [];
@@ -380,6 +436,7 @@ function playGame(){
     }
 
     function renderPlants(){
+        console.log(plants)
         if(plants.length){
             plants.forEach((plant, index) => {
                 plant.update();
@@ -450,10 +507,22 @@ function playGame(){
             ){ 
                 let image = null;
 
-                if(seed.image.src.includes("PeaShooterSeed")) image = PeaShooterImage.replace("*", "00")
-                if(seed.image.src.includes("IcePeaSeed")) image = IcePeaImage.replace("*", "02");
-                if(seed.image.src.includes("SunFlowerSeed")) image = SunFlowerImage.replace("*", "00");
-                if(seed.image.src.includes("WallNutSeed")) image = WallNutImage.replace("*", "00");
+                if(seed.image.src.includes("PeaShooterSeed")) {
+                    image = PeaShooterImage.replace("*", "00");
+                    draggedItemsName = "PeaShooter"
+                }
+                else if(seed.image.src.includes("IcePeaSeed")) {
+                    image = IcePeaImage.replace("*", "02");
+                    draggedItemsName = "IcePea"
+                }
+                else if(seed.image.src.includes("SunFlowerSeed")) {
+                    image = SunFlowerImage.replace("*", "00");
+                    draggedItemsName = "SunFlower"
+                }
+                if(seed.image.src.includes("WallNutSeed")) {
+                    image = WallNutImage.replace("*", "00");
+                    draggedItemsName = "Wallnut"
+                }
                 
                 draggedItems = new Sprite(90, 90, mouse.x - 90 / 2, mouse.y - 90 / 2, image, true);
                 draggedItems.update();
@@ -483,6 +552,47 @@ function playGame(){
         });
 
     }
+
+    function handlePlantPut(){
+        if(!draggedItems || draggedItems?.image.src.includes("Shovel")){
+            return false;
+        }
+
+        let nearestPosition = []
+
+        grounds.forEach((ground, index) => {
+            const data = {
+                distance: draggedItems.calcDistanceWith(ground),
+                ground: grounds[index]
+            }
+
+            nearestPosition.push(data);
+        });
+
+        nearestPosition.sort((a, b) => a.distance - b.distance);
+
+        const plantPositionFinal = {
+            x: nearestPosition[0].ground.x,
+            y: nearestPosition[0].ground.y,
+        }
+
+        let plant = null
+
+        if(draggedItemsName === "PeaShooter"){
+            plant = new PeaShooter(90, 90, plantPositionFinal.x, plantPositionFinal.y);
+        }else if(draggedItemsName === "Wallnut"){
+            plant = new Wallnut(90, 90, plantPositionFinal.x, plantPositionFinal.y);
+        }
+        else if(draggedItemsName === "IcePea"){
+            plant = new IcePeaShooter(90, 90, plantPositionFinal.x, plantPositionFinal.y);
+        }
+        else if(draggedItemsName === "SunFlower"){
+            plant = new SunFlower(90, 90, plantPositionFinal.x, plantPositionFinal.y);
+        }
+
+        draggedItems = null;
+        return plants.push(plant);
+    }   
 
     function handleZombies(){
         zombies.forEach((zombie, index) => {
@@ -575,7 +685,7 @@ function playGame(){
 
     window.addEventListener('mouseup', function(){
         game.mouseDown = false;
-        draggedItems = null;
+        handlePlantPut();
     });
 
     window.addEventListener('mousemove', function(e){

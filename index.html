@@ -66,10 +66,11 @@
         width: 100%;
         height: 100vh;
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
         align-items: center;
         justify-content: center;
         background-color: brown;
+        padding: 0px 50px;
     }
     .input-field{
         margin-top: 30px;
@@ -103,22 +104,70 @@
     .menubtn img{
         max-height: 100%;
     }
+    .menu{
+        flex: 1 1 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    .instruction{
+        width: fit-content;
+        height: 500px;
+        color: white;
+        background-color: rgb(88, 24, 24);
+        padding: 50px;
+        font-size: 1.2rem;
+        border-radius: 10px;
+        position: relative;
+        display: none;
+    }
+    .instruction ol{
+        list-style-position: inside;
+    }
+    #close{
+        position: absolute;
+        background-color: red;
+        color: white;
+        padding: 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-width: fit-content;
+        top: 10px;
+        right: 10px;
+        border-radius: 6px;
+        padding: 10px 15px;
+    }
 </style>
 <body>
     <div class="main-menu">
-        <img src="./Sprites/General/logo.png" alt="">
-        <div class="input-field">
-            <input type="text" name="username" id="username" placeholder="Enter Username">
-            <select name="level" id="level">
-                <option value="easy">Select Level</option>
-                <option value="easy">Easy</option>
-                <option value="medium">Medium</option>
-                <option value="hard">Hard</option>
-            </select>
-            <div class="action">
-                <button class="menubtn" id="play"><img src="./Sprites/General/Shovel.png" alt="">Play Game</button>
-                <button class="menubtn" id="instruction" style="background-color: red;">Instruction</button>
+        <div class="menu">
+            <img src="./Sprites/General/logo.png" alt="">
+            <div class="input-field">
+                <input type="text" name="username" id="username" placeholder="Enter Username">
+                <select name="level" id="level">
+                    <option value="easy">Select Level</option>
+                    <option value="easy">Easy</option>
+                    <option value="medium">Medium</option>
+                    <option value="hard">Hard</option>
+                </select>
+                <div class="action">
+                    <button class="menubtn" id="play"><img src="./Sprites/General/Shovel.png" alt="">Play Game</button>
+                    <button class="menubtn" id="instruction" style="background-color: red;">Instruction</button>
+                </div>
             </div>
+        </div>
+        <div class="instruction">
+            <span id="close">X</span>
+            <h1>How to play the game</h1>
+            <ol type="1">
+                <li>Input Username</li>
+                <li>Take the sun to choose the plant card</li>
+                <li>Put the plants card into the field to fight zombies</li>
+                <li>Don't let zombie pass through the yard</li>
+                <li>Enjoy!</li>
+            </ol>
         </div>
     </div>
     <div class="game">
@@ -133,5 +182,15 @@
         </div>
     </div>
     <script src="app.js"></script>
+    <script>
+        const instruction = document.querySelector('.instruction');
+        document.getElementById('instruction').onclick = () => {
+            instruction.style.display = instruction.style.display === "block" ? "none" : "block" 
+        }
+
+        document.getElementById('close').onclick = () => {
+            instruction.style.display = "none" 
+        }
+    </script>
 </body>
 </html>
