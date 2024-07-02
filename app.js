@@ -57,8 +57,7 @@ function playGame(){
     const GeneralImage = {
         Background: './Sprites/General/Background.jpg',
         Sun: './Sprites/General/Sun.png',
-        CloseIcon: './Sprites/General/close-icon.png',
-        LawnIdle: './Sprites/General/lawnmoweridle.gif',
+        LawnIdle: './Sprites/General/lawnmowerIdle.gif',
         LawnActive: './Sprites/General/lawnmowerActivated.gif',
         Shovel: './Sprites/General/Shovel.png',
     }
@@ -70,12 +69,28 @@ function playGame(){
         WallNut: './Sprites/Seeds/WallNutSeed.png',
     }
 
+    const PeaImage = {
+        Pea: './Sprites/General/Pea.png',
+        IcePea: './Sprites/General/IcePea.png',
+    }
+
     const GrassImage = './Sprites/General/Grass.bmp';
     const ZombieImage = './Sprites/Zombie/frame_*_delay-0.05s.gif'
     const SunFlowerImage = './Sprites/SunFlower/frame_*_delay-0.06s.gif'
     const PeaShooterImage = './Sprites/PeaShooter/frame_*_delay-0.12s.gif'
     const IcePeaImage = './Sprites/IcePea/frame_*_delay-0.12s.gif'
     const WallNutImage = './Sprites/WallNut/frame_*_delay-0.12s.gif'
+
+    const zombieimages = [];
+    const peashooterimages = [];
+
+    for(let i = 0; i < 34; i++){
+        zombieimages.push(ZombieImage.replace("*",  i.toString().padStart(2, "0")))
+    }
+
+    for(let i = 0; i < 31; i++){
+        peashooterimages.push(PeaShooterImage.replace("*", i.toString().padStart(2, "0")));
+    }
 
     const lawnMowerInit = {
         width: 100,
@@ -137,9 +152,12 @@ function playGame(){
         }
     }
 
-    class Sun extends Sprite{
+    class Sun{
         constructor(width, height, x, y){
-            super(width, height, x, y);
+            this.width = width;
+            this.height = height;
+            this.x = x;
+            this.y = y;
             this.velocityY = 1;
             this.velocityX = 0;
             this.image = new Image();
@@ -197,11 +215,18 @@ function playGame(){
             super(width, height, x, y);
             this.image = new Image();
             this.image.src = PeaShooterImage.replace("*", "00");
+            this.pea = new Image();
+            this.pea.src = PeaImage.Pea
+            this.widthPea = 30;
+            this.heightPea = 30;
+            this.xPea = this.x + this.width - 10;
+            this.yPea = this.y + 10;
             this.frameCurrent = 0;
             this.frameMax = 30;
             this.frameElapsed = 0;
         }
         draw(){
+            ctx.drawImage(this.pea, this.xPea, this.yPea, this.widthPea, this.heightPea);
             ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
         }
         update(){
@@ -209,13 +234,19 @@ function playGame(){
                 this.frameCurrent = 0;
             }
 
-            this.image.src = PeaShooterImage.replace("*", this.frameCurrent < 10 ? "0"+this.frameCurrent : this.frameCurrent);
+            this.xPea += 5;
+
+            if(this.xPea > canvas.width){
+                this.xPea = this.x + this.width - 10
+            }
+
+            this.image.src = peashooterimages[this.frameCurrent];
 
             this.draw();
 
             this.frameElapsed++;
 
-            if(this.frameElapsed === 12){
+            if(this.frameElapsed === 5){
                 this.frameCurrent++;
                 this.frameElapsed = 0;
             }
@@ -227,7 +258,7 @@ function playGame(){
             super(width, height, x, y);
             this.image = new Image();
             this.image.src = IcePeaImage.replace("*", "00");
-            this.frameCurrent = 0;
+            this.frameCurrent = 2;
             this.frameMax = 31;
             this.frameElapsed = 0;
         }
@@ -236,10 +267,10 @@ function playGame(){
         }
         update(){
             if(this.frameCurrent === this.frameMax){
-                this.frameCurrent = 0;
+                this.frameCurrent = 2;
             }
 
-            this.image.src = PeaShooterImage.replace("*", this.frameCurrent < 10 ? "0"+this.frameCurrent : this.frameCurrent);
+            this.image.src = IcePeaImage.replace("*", this.frameCurrent < 10 ? "0"+this.frameCurrent : this.frameCurrent);
 
             this.draw();
 
@@ -247,7 +278,7 @@ function playGame(){
 
             if(this.frameElapsed === 12){
                 this.frameCurrent++;
-                this.frameElapsed = 0;
+                this.frameElapsed = 2;
             }
         }
     }
@@ -271,9 +302,12 @@ function playGame(){
         }
     }
 
-    class Zombie extends Sprite{
+    class Zombie{
         constructor(width, height, x, y, imageSrc){
-            super(width, height, x, y);
+            this.width = width;
+            this.height = height;
+            this.x = x;
+            this.y = y;
             this.image = new Image();
             this.image.src = imageSrc;
             this.frameMax = 33;
@@ -302,7 +336,7 @@ function playGame(){
                 this.frameCurrent = 0;
             }
 
-            this.image.src = ZombieImage.replace("*", this.frameCurrent < 10 ? "0"+this.frameCurrent : this.frameCurrent);
+            this.image.src = zombieimages[this.frameCurrent];
 
             this.draw();
 
@@ -436,7 +470,6 @@ function playGame(){
     }
 
     function renderPlants(){
-        console.log(plants)
         if(plants.length){
             plants.forEach((plant, index) => {
                 plant.update();
